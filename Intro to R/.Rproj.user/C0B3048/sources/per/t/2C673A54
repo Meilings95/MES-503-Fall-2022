@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1660065323770.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "332138050",
+    "id" : "2C673A54",
+    "lastKnownWriteTime" : 1660067953,
+    "last_content_update" : 1660067953596,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Intro to R/Lab4- Intro to R.Rmd",
+    "project_path" : "Lab4- Intro to R.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "92,95",
+        "scrollLine" : "229"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
