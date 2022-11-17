@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1666793523758.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "7E7FAC60",
+    "lastKnownWriteTime" : 2314885436531552565,
+    "last_content_update" : 1666793523758,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "8EE3780A",
+        "caption" : "height",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=height&cache_key=8EE3780A",
+        "displayedObservations" : 952,
+        "environment" : "",
+        "expression" : "height",
+        "object" : "height",
+        "preview" : 0,
+        "totalObservations" : 952,
+        "variables" : 2
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

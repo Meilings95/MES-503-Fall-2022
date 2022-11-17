@@ -1,0 +1,14 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r, fig.width = 15, fig.height = 8}
+library(ggplot2)
+ggplot(aes(x = Density, y = PercentSurvival), data = BeetleSurvival) + geom_point() + geom_smooth(method = lm) + xlab("Beetle Egg Density") + ylab("Percent Beetle Survival (%)") + ggtitle("Relationship between beetle egg density and percent survival just adding words here to try and make the title onger and see if it cuts off") + labs(caption="Figure 2. Scatter plot of the density of beetle eggs and their corresponding percent of survival shown with a linear regression (y = -0.155x+65.679) and r^2 value of 0.7412.")
+
+
+```
+

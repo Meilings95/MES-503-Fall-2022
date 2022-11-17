@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1661793053960.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2979453426",
+    "id" : "ECC96479",
+    "lastKnownWriteTime" : 1666202947,
+    "last_content_update" : 1666202947671,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 5- Linear Regression/Lab 5- Linear Regression_InClass.Rmd",
+    "project_path" : "Lab 5- Linear Regression_InClass.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "22,16",
+        "scrollLine" : "19"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

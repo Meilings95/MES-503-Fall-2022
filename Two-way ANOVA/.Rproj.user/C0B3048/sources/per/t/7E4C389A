@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1666700544806.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "74682350",
+    "id" : "7E4C389A",
+    "lastKnownWriteTime" : 1666033455,
+    "last_content_update" : 1666033455,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 9- Two-way ANOVA/Take Home Assignmnet 4- two-way ANOVA_key.Rmd",
+    "project_path" : "Take Home Assignmnet 4- two-way ANOVA_key.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "68,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

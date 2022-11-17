@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1666700817114.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "723E7FC",
+    "lastKnownWriteTime" : 1913929356016,
+    "last_content_update" : 1666700817114,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "581D86A8",
+        "caption" : "urchins_summary",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=urchins_summary&cache_key=581D86A8",
+        "displayedObservations" : 3,
+        "environment" : "",
+        "expression" : "urchins_summary",
+        "object" : "urchins_summary",
+        "preview" : 0,
+        "totalObservations" : 3,
+        "variables" : 6
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

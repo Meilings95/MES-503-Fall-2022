@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1663680113878.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1462422312",
+    "id" : "DC2E2697",
+    "lastKnownWriteTime" : 1663680471,
+    "last_content_update" : 1663765947568,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 5- Linear Regression/beetlesurvivalKnitTest.Rmd",
+    "project_path" : "beetlesurvivalKnitTest.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "9,520",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

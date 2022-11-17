@@ -1,0 +1,195 @@
+---
+title: "Lab 10 - Correlation"
+author: "Sonora Meiling"
+date: "10/24/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+### Housekeeping
+By now you should be getting used to the housekeeping steps. Make sure you are working in a "Lab 10" project that is saved in an appropriately named and organized folder on your computer. 
+
+As always, let's first define our working directory
+
+```{r Define the Working Directory}
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 10 - Correlation")
+
+```
+
+### Example 1: Relationship Between Crab Gill and Body Weight
+In an effort to understand how food preferences affect growth in the intertidal crab species Pachygrapsus crassipes, researchers collected samples of 12 crabs from 5 different tidal flats populated with different species of bivalves. In addition to measuring body weight (g) of the crabs researchers also measured a variety of other measurements on the crabs, including gill weight (mg). One tidal flat was fully submerged and had a large amount of variability in the crab body weight. The researchers then wanted to know if any of the other measures they took relate to fitness in the crabs and hence body weight for this flat. You will perform a correlation analysis on gill weight to determine if there is a relationship between the two, affecting their study.
+
+```{r Import the Data}
+crabs <- read.csv("data/Crabdata.csv")
+```
+
+What are the independent and dependent variables?
+
+    - Independent: trick question, there are none
+    - Dependent: Body weight and gill weight
+
+What are the statistial null and alternative hypotheses for the correlation analysis?
+
+     - Null: r/p/t = 0
+     - Alternative: r does not equal 0
+
+What are the research null and alternative hypotheses for the correlation analysis?
+
+     - Null: there is no relationship between gill weight and body weight
+     - Alternative: there is a relationship between gill weight and body weight
+     
+```{r Look at the Data}
+#### Dataframe ####
+View(crabs)
+
+#### Scatterplot ####
+library(ggplot2)
+crabs_plot <- ggplot() + geom_point(aes(x= Body.weight, y= Gill.weight), data = crabs) + 
+  ylab("Gill Weight (mg)") +
+  xlab("Body Weight (g)") +
+  ggtitle("Comparison of Gill Weight by Body Weight in the Lined Shore Crab") +
+  ylim(c(1, 400))
+crabs_plot
+
+# Do the data look approximately linear?
+# yes
+```
+
+```{r Assumptions}
+# We have already confirmed the data look approximately linear so correlation analysis should be appropriate, but let's confirm statistically
+
+shapiro.test(crabs$Gill.weight)
+# Are the gill weight data normally distributed? If not, transform
+# yes, so we don't need to transform the data
+
+shapiro.test(crabs$Body.weight)
+# Are the body weight data normally distributed? If not, transform
+# yes, so we don't need to transform the data
+
+```
+
+```{r Correlation Analysis}
+cor(crabs, use="all.obs", method="pearson") #calculating correlation using pearson, gives correlation matrix
+cov(crabs, use="all.obs") #calculating covariance, gives covariance matrix
+#covariance of a covariant and itself= variance
+#don't have to do this step, it's just a good way to look at your data beforehand
+
+#if two variables are not significantly different r=0, so we calculate a tstat from r to perform a ttest (because ttests are centered around 0)
+
+cor.test(crabs$Body.weight,crabs$Gill.weight, method="pearson")
+#performs a ttest based on body weight and gill weight
+
+# What are the results? Is there a relationship between crab gill weigt and body weight? If so, in what direction? How strong is the relationship? (don't forget to report both Pearson's r and p)
+#p = 0.0002 so there is a significant positive correlation between the two variables
+#the variables are 86.52% correlated
+
+crabs_plot + geom_label(aes(x = 20, y = 100), label = "r = 0.8652\n p = 0.0002", data = crabs)
+```
+
+### Example 2: Relationship Between Parent and Child Height
+In this example, researchers want to investigate if there is a relationship between parent and child height.
+
+```{r Import the Data}
+height <- read.csv("data/Heights.csv")
+```
+
+What are the independent and dependent variables?
+
+    - Independent: none
+    - Dependent: parent height and child height
+
+What are the statistial null and alternative hypotheses for the correlation analysis?
+
+     - Null: r = 0
+     - Alternative: r does not equal 0 
+
+What are the research null and alternative hypotheses for the correlation analysis?
+
+     - Null: there is no relationship between parent height and child height
+     - Alternative: there is no relationship between parent height and child height
+     
+```{r Look at the Data}
+#### Dataframe ####
+View(height)
+
+#### Scatterplot ####
+height_plot <- ggplot() + geom_point(aes(x= Parent.Height, y= Child.Height), data = height) + 
+  ylab("Child Height (cm)") +
+  xlab("Parent Height (cm)") +
+  ggtitle("Relationship Between Parent and Child Height")
+height_plot
+
+# Do the data look approximately linear?
+# yes, looks like there is a positive relationship between parent and child height
+```
+
+```{r Assumptions}
+# We have already confirmed the data look approximately linear so correlation analysis should be appropriate, but let's confirm statistically
+
+
+# Are the parent height data normally distributed? If not, transform
+shapiro.test(height$Parent.Height)
+# no, they are not normally distributed
+
+# let's try a square transformation first
+height$Parent_square <- (height$Parent.Height)^2
+shapiro.test(height$Parent_square)
+# the transormation didn't work, the data are still not normally distributed
+
+# let's try a squareroot transformation now
+height$Parent_sqrt <- sqrt(height$Parent.Height)
+shapiro.test(height$Parent_sqrt)
+# the transormation didn't work, the data are still not normally distributed
+
+# let's try a log transformation
+height$Parent_log <- log(height$Parent.Height)
+shapiro.test(height$Parent_log)
+# the transormation didn't work, the data are still not normally distributed
+
+# Are the child height data normally distributed? If not, transform
+# doesn't really matter, because we can't transform the parent height data to be normal so we have to use a non-parametric test anyways
+```
+
+```{r Correlation Analysis}
+cor.test(height$Parent.Height , height$Child.Height, method="spearman", exact = FALSE) 
+
+# what are the results? Is there a relationship between parent and child height? If so, in what direction? How strong is the relationship? (don't forget to report both spearman's p and p)
+# yes, there is a significantly positive relationship between parent and child height (p <2.2 e-16, spearman's rho = 0.388). 38% of the variation in child height is explained by parent height
+
+```
+
+For these two examples we only had 1 correlation test to run, but sometimes you may collect multiple covariates that you wish to test so it becomes tedious to run each individual test one at a time. Instead of using cor.test(), in these cases, you can use rcorr() as seen below
+
+```{r Import Data}
+height_extended <- read.csv("data/Heights_extended.csv")
+```
+
+```{r Look at the Data}
+#### Dataframe ####
+View(height_extended)
+
+#### Plot(s) ####
+# Instead of plotting each pairwise comparison of variables to see if they have a linear relationship we can use the pairs() function to make them all at once
+pairs(height_extended)
+
+# Do the variables look approximately linearly related?
+# some variable look linearly related (e.g child height and child weight) while others don't look related at all (but none seem to have a non-linear relationsip)
+```
+
+```{r Assumptions}
+# We have already checked the Parent height and child height distributions and know they can't be transformed to be normal, meaning we need to use the non-parametric spearman's correlation test instead
+```
+
+
+```{r Alternative Correlation Function}
+#### An alternative method #### 
+install.packages("Hmisc")
+library(Hmisc)
+rcorr(as.matrix(height_extended), type="spearman")
+#allows you to run correlations all at once (easier than cor.test if have multiple correlation tests to run because you don't have to run ttest on every pair of variables, spits out matrix with p-values)
+
+# What are the results? What variable is parent height most correlated with? What about child height? (don't forget to report both spearman's p and p)
+# parent height is significantly positively related to child height, parent weight, and child weight (p>0.05). Parent height is most strongly related to parent weight (spearman's rho = 0.49). 
+
+```
+

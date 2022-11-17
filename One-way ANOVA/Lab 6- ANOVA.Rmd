@@ -1,0 +1,278 @@
+---
+title: "Lab 6- One Way ANOVA"
+author: "Sonora Meiling"
+date: "Created for MES 503 8/10/2022 | Adapted from Marilyn Brandt and Dan Holstein 2016"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+*The goal of this lab is to introduce you to working with the functions necessary for performing one-way ANOVAs in R.*
+
+### Housekeeping
+By now you should be getting used to the housekeeping steps. Make sure you are working in a "Lab 6" project that is saved in an appropriately named and organized folder on your computer. 
+
+As always, let's define our working directory
+
+```{r defining working directory}
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 6- Linear Regression and ANOVA")
+
+herb <- read.csv("data/HerbivoryNutrientExperiment.csv")
+```
+
+### Example 1: Effect of herbivory on algal growth rates
+Researchers have implemented an experiment to evaluate the effects of herbivory and nutrients on algal growth rates. On randomized locations across a reef they've exposed 1x1 m areas to one of 5 treatments:
+
+1) Full cage 
+2) Additional nutrients 
+3) Full cage + additional nutrients 
+4) An open cage
+5) Control (no manipulation)  
+ 
+The cage represents an herbivore exclusion treatment.  The open cage is to control for potential effects of the cage itself.
+
+What are the statistial null and alternative hypotheses for the ANOVA test?
+
+     - Null:
+     - Alternative:
+
+What are the research null and alternative hypotheses for the ANOVA test?
+
+     - Null:
+     - Alternative:
+
+```{r Look at the data}
+#### Dataframe ####
+
+
+# Let's get rid of the "Sample" column because it is unnecessary
+herb$Sample <- NULL
+
+##### Melt the data #####
+# We need to rearrange the data so that they are in tabular format. To do this, we will use the function melt() from the reshape2 library
+
+install.packages("reshape2")
+library(reshape2)
+herb.melted <- melt(herb,variable.name = "treatment", value.name = "growthrate")
+View(herb.melted)
+
+#### Plot ####
+##### Summarize the Data #####
+# In order to make bar plots of our data, we first have to summarize the data for ggplot
+
+install.packages("plyr")
+library(plyr)
+
+# The format for making the summary dataframe is below, words in all caps are directions for what you should input to customize the command to your data
+# DATAFRAME.summary <- ddply(DATAFRAME, ~FACTOR, summarise, 
+                    #mean = mean(RESPONSEVARIABLE), 
+                    #sd = sd(RESPONSEVARIABLE), 
+                    #n = length(RESPONSEVARIABLE), 
+                    #SEM = sd(RESPONSEVARIABLE)/sqrt(length(RESPONSEVARIABLE)))
+
+herb.summary <- ddply(herb.melted, ~treatment, summarise, 
+                      mean = mean(growthrate), 
+                      sd = sd(growthrate), 
+                      n = length(growthrate), 
+                      SEM = sd(growthrate)/sqrt(length(growthrate)))
+herb.summary
+
+# Now we can actually plot the data using the following skeleton, again, words in all caps are directions for what you should input to cusotmize the command to your data
+#ggplot(aes(x = EXPLANTORYVARIABLE, y = RESPONSEVARIABLE), data = DATAFRAME) +
+  #geom_bar(stat = "identity") +
+  #geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25) +
+  #ggtitle("TITLE OF YOUR FIGURE") +
+  #ylab("Y AXIS TITLE") +
+  #xlab("X AXIS TITLE")
+
+library(ggplot2)
+AlgaePlot <- ggplot(aes(x = treatment, y = mean), data = herb.summary) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25) +
+  ggtitle("Algae Growth Rates") +
+  ylab("Mean Growth Rate (cm)") +
+  xlab("Treatment")
+
+```
+
+Do you think there will be a significant difference in mean algae growth rates among treatment groups? If so, which ones?
+     
+     -
+
+```{r Testing Assumptions}
+##### Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Equal Variance #####
+# First let's test for homogeneity of variance (in growth rates) among treatments
+bartlett.test(growthrate ~ treatment, herb.melted) #tests differences of variances so if it is significant that means the variance is heterogenous and we do NOT meet the assumption of a one-way ANOVA (and would need to transform our data)
+
+# What are the results? What do they mean? Do growth rates in different treatments have equal variance? Do we need to transform the data?
+
+#### Normal Distribution ####
+# the easiest way to extract our residuals is to first build the ANOVA
+algaeANOVA <- aov(growthrate ~ treatment, data = herb.melted)
+
+# then we can easily pull them out of the output
+aov_residuals <- residuals(algaeANOVA)
+
+# let's first look to see if they look approximately normally distributed
+hist(aov_residuals)
+
+# then we can test if the residuals are approximately normally distributed with the Shapiro-Wilk Test
+shapiro.test(aov_residuals) #if p-value isn't significant your residuals are normally distributed and you can continue on with the ANOVA
+
+#Are the residuals normal? If not, you can perform a transformation. Once you perform the transformation you should perform your normality test again.
+
+```
+
+Now that we know we meet all of the assumptions of an ANOVA, we can run the analsis.
+
+```{r Results}
+# Remember we have already built the ANOVA, now we just need to look at the results
+algaeANOVA
+summary(algaeANOVA)
+```
+
+What are the results of the experiment in respect to the effects of herbivory and nutrients on algal growth? HINT: Make sure to include the F-statistic and p-value
+
+      -
+      
+```{r Tukey's HSD Post-hoc analysis}
+# If you get significant ANOVA results, you will follow up with a Tukey's HSD Post-Hoc analysis to tease apart which groups are significantly different from each other
+
+install.packages(agricolae)
+library(agricolae)
+Tukey <- HSD.test(algaeANOVA, "treatment")
+Tukey
+# Treatment groups with distinct letters are significantly different from each other
+
+# To add these letters to our bar graph, we first have to make a vector. This vector will be superimposed ontop of the bars (won't associate the output of the Tukey test with the treatments) so we have to order the elements the same as is seen on the bar chart.
+
+sigs <- c("c", "a", "b", "a", "bc", "bc")
+
+# Now we have to add this vector to the summary dataframe
+herb.summary$sigs <- sigs
+herb.summary
+
+# Now we can add the letters to our plot
+AlgaePlot + 
+  geom_text(aes(x = treatment, y = mean+SEM + 1), data = herb.summary, label = sigs, colour = "black")
+
+```
+
+### ANOVA Steps
+To review, the steps of performing an ANOVA are
+   1. Look at the data (data frame, plot/ggplot)
+   2. Test for equal variances (bartlett.test())
+   3. Transform if necessary
+   4. Save residuals and check for normality (shapiro.test())
+   5. Perform the ANOVA (aov())
+   6. Perform post-hoc comparisons if necessary
+
+### Example 2: Effect of site on diatom diversity
+```{r Import the data}
+diatoms <- read.csv("data/Diatomdiversity.csv")
+```
+
+What are the statistial null and alternative hypotheses for the ANOVA test?
+
+     - Null:
+     - Alternative:
+
+What are the research null and alternative hypotheses for the ANOVA test?
+
+     - Null:
+     - Alternative:
+
+```{r Look at the data}
+#### Dataframe ####
+
+
+# We can get rid of the "NA"s when we melt the data
+
+##### Melt the data #####
+# We need to rearrange the data so that they are in tabular format. To do this, we will use the function melt() from the reshape2 library
+
+diatoms.melted <- melt(diatoms,na.rm = TRUE,value.name = "diversity", variable.name = "site")
+diatoms.melted
+
+#### Plot ####
+##### Summarize the Data #####
+# In order to make bar plots of our data, we first have to summarize the data for ggplot
+
+# The format for making the summary dataframe is below, words in all caps are directions for what you should input to customize the command to your data
+# DATAFRAME.summary <- ddply(DATAFRAME, ~FACTOR, summarise, 
+                    #mean = mean(RESPONSEVARIABLE), 
+                    #sd = sd(RESPONSEVARIABLE), 
+                    #n = length(RESPONSEVARIABLE), 
+                    #SEM = sd(RESPONSEVARIABLE)/sqrt(length(RESPONSEVARIABLE)))
+
+diatoms.summary <- ddply(, ~, summarise,
+                        mean = mean(),
+                        sd = sd(),
+                        n = length(),
+                        SEM = sd()/sqrt(length()))
+diatoms.summary
+
+# Now we can actually plot the data. Below I have copied the ggplot() code we used for the algae example. Let's change the variables so we can use it for this diatom example
+AlgaePlot <- ggplot(aes(x = treatment, y = mean), data = herb.summary) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25) +
+  ggtitle("Algae Growth Rates") +
+  ylab("Mean Growth Rate (cm)") +
+  xlab("Treatment")
+
+```
+
+Do you think there will be a significant difference in mean diatom diversity among sites? If so, which ones?
+     
+     -
+
+```{r Testing Assumptions}
+##### Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Equal Variance #####
+# First let's test for homogeneity of variance (in diversity) among sites
+# bartlett.test(DEPENDENTVARIABLE ~ INDEPENDENTVARIABLE, DATAFRAME)
+bartlett.test( ~ , ) #tests differences of variances so if it is significant that means the variance is heterogenous and we do NOT meet the assumption of a one-way ANOVA (and would need to transform our data)
+
+# What are the results? What do they mean? Does diversity at different sites have equal variance? Do we need to transform the data?
+
+#### Normal Distribution ####
+# the easiest way to extract our residuals is to first build the ANOVA. Remember, the formula is DEPENDENTVARIABLE ~ INDEPENTENT VARIABLE, data = MELTEDDATAFRAME
+diatomsANOVA <- aov( ~ , data = )
+
+# then we can easily pull them out of the output
+diatom_residuals <- residuals(diatomsANOVA)
+
+# let's first look to see if they look approximately normally distributed
+hist(diatom_residuals)
+
+# then we can test if the residuals are approximately normally distributed with the Shapiro-Wilk Test
+shapiro.test(diatom_residuals) #if p-value isn't significant your residuals are normally distributed and you can continue on with the ANOVA
+
+#Are the residuals normal? If not, you can perform a transformation. Once you perform the transformation you should perform your normality test again.
+
+```
+
+Now that we know we meet all of the assumptions of an ANOVA, we can run the analsis.
+
+```{r Results}
+# Remember we have already built the ANOVA, now we just need to look at the results
+summary(diatomANOVA)
+```
+
+What are the results of the ANOVA? HINT: Make sure to include the F-statistic and p-value
+
+      -
+      
+Should we run a Tukey's HSD Post-hoc analysis? Why or why not?
+
+      -

@@ -1,0 +1,87 @@
+---
+title: "Take Home Assignment 4- two-way ANOVA_key"
+author: "PUT YOUR NAME HERE"
+date: "Created by Sonora Meiling 10/17/2022 for MES 503 Fall 22"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+### Housekeeping
+
+**This assignment is due via email to sonora.meiling@uvi.edu by Tuesday 10/25 at 10am. Late assignments will be deducted points. Please send as a word document with the file name YOURLASTNAME_TakeHomeAssignment4.docx (e.g. Meiling_TakeHomeAssignment4a.docx)**
+
+### Urchins two-way ANOVA
+#### Q1: Variables (0.5 pt)
+Identify the independent predictor variable(s) (X) and the dependent response variable (Y). Make sure to specify if dependent predictor variables are fixed or random
+
+     - Independent predictor variable:
+     
+     - Dependent predictor variable:
+
+
+#### Q2: Hypotheses (0.5 pt)
+
+      What are the RESEARCH null and alternative hypotheses?
+        - Null:
+        - Alternative:
+      What are the STATISTICAL null and alternative hypotheses?
+        - Null:
+        - Alternative:
+        
+#### Q3: Results (4 pts)
+
+*In 2-4 sentences explain the results of your analyses as if you were writting a scientific manuscript for peer review (2 pts). Make sure to show your work (1) and include a figure with proper labels and a figure caption (1 pt).*
+
+```{r}
+urchins <- read.csv("data/urchins.csv")
+
+View(urchins)
+
+urchins$Sample <- NULL
+colnames(urchins) <- c("predators", "source", "growth") 
+
+urchin_groups <- split(urchins$growth,list(urchins$predators, urchins$source))
+bartlett.test(urchin_groups) #not significant, equal variance, don't need to transform
+
+urchin_ANOVA <- aov(growth ~ predators*source, urchins)
+urchin_residuals <- residuals(urchin_ANOVA)
+shapiro.test(urchin_residuals) #not significant, normal distribution, don't need to transform
+
+summary(urchin_ANOVA) #only predators is signficiant
+
+library(plyr)
+urchins_summary <- ddply(urchins, ~predators, summarise, 
+                            mean = mean(growth),
+                            sd = sd(growth),
+                            n = length(growth),
+                            SEM = sd(growth)/sqrt(length(growth)))
+
+urchins_plot <- ggplot(aes(x = predators, y = mean), data = urchins_summary) + 
+  geom_bar(stat="identity", position = position_dodge()) + 
+  geom_errorbar(aes(ymin = mean - SEM,ymax = mean + SEM), position = position_dodge(width = 0.9), width = 0.25) + 
+  ylab("Growth Rate (mean +/- SEM)") + 
+  xlab("Number of Predators") +
+  ggtitle("Effect of Predators on Urchin Growth Rates")
+
+urchins_plot
+
+urchins_tukey <- HSD.test(urchin_ANOVA, "predators")
+urchins_tukey
+
+urchin_SigLetters <- c("b", "a","a")
+urchins_summary$sigletters <- urchin_SigLetters
+
+urchins_plot +
+  geom_text(aes(x = predators, y = mean+SEM + 0.45), data = urchins_summary, label = urchins_summary$sigletters, colour = "black")
+
+#highest growth rates when most predators are present (3), lowest with absence of predators. Growth rates are significantly higher the more predators are present.
+```
+
+
+
+
+
+
+
+

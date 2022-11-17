@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1666792468245.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "C04542E1",
+    "lastKnownWriteTime" : 8242469376099250025,
+    "last_content_update" : 1666792468245,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "452DB991",
+        "caption" : "crabs",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=crabs&cache_key=452DB991",
+        "displayedObservations" : 12,
+        "environment" : "",
+        "expression" : "crabs",
+        "object" : "crabs",
+        "preview" : 0,
+        "totalObservations" : 12,
+        "variables" : 2
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

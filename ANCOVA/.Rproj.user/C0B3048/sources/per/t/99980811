@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1667217749620.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "65586958",
+    "id" : "99980811",
+    "lastKnownWriteTime" : 1667402137,
+    "last_content_update" : 1667402137811,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 11- ANCOVA/Lab 11- ANCOVA-InClass.Rmd",
+    "project_path" : "Lab 11- ANCOVA-InClass.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "382,266",
+        "scrollLine" : "362",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

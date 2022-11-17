@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1663766490132.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "862809668",
+    "id" : "60A245F2",
+    "lastKnownWriteTime" : 1663776955,
+    "last_content_update" : 1663776955624,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 6- ANOVA/Lab 6- ANOVA_InClass.Rmd",
+    "project_path" : "Lab 6- ANOVA_InClass.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "145,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

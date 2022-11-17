@@ -1,0 +1,40 @@
+---
+title: "Take Home Assignment 2"
+author: "Sonora Meiling"
+date: "9/13/2022"
+output: word_document
+---
+
+### Housekeeping
+
+**This assignment is due via email to sonora.meiling@uvi.edu by Tuesday 9/20 at 10am. Late assignments will be deducted points. Please send as a word document**
+
+```{r setting working directory}
+#insert your working directory here (HINT: it will likely be the same as your working directory from the Rmd file we went over during class)
+```
+
+### Beetle Survival Linear Regression
+
+Using the BeetleSurvival.csv file provided on blackboard, run a linear regression to test if there is a relationship between density and survival.
+
+#### Q1: Variables (1 pt)
+Identify the independent predictor variable (X) and the dependent response variable (Y)
+
+     - Independent predictor variable:
+     
+     - Dependent predictor variable:
+
+
+#### Q2: Hypotheses (1 pt)
+
+      What are the RESEARCH null and alternative hypotheses?
+        - Null:
+        - Alternative:
+      What are the STATISTICAL null and alternative hypotheses?
+        - Null:
+        - Alternative:
+        
+#### Q3: Results (3 pts)
+
+*In 2-4 sentences explain the results of your linear regression as if you were writting a scientific manuscript for peer review (2 pts). Make sure to show your work and include a figure with proper labels and a figure caption (1 pt).*
+

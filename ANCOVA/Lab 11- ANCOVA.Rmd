@@ -1,0 +1,333 @@
+---
+title: "Lab 11- ANCOVA"
+author: "Created by Sonora Meiling 10/21/2022 for MES 503 Fall 2022"
+date: "Adapted from Marilyn Brandt 2016"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+*The goal of this lab is to introduce you to working with the functions necessary for performing ANCOVAs in R.*
+
+### Housekeeping
+By now you should be getting used to the housekeeping steps. Make sure you are working in a "Lab 11" project that is saved in an appropriately named and organized folder on your computer. 
+
+As always, let's first define our working directory
+
+```{r Define the Working Directory}
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 11- ANCOVA")
+
+```
+
+### Example 1: Effect of Cricket Species on Song Pulse
+There are two cricket species Oecanthus exclamationis and Oecanthus niveus, you're objective is to determine:
+      - If the pulses of their songs are different
+      - If the covariate, Temperature, has a significant effect on cricket song pulses.
+
+What are the independent, dependent, and covariate variables?
+    - Independent:
+    - Dependent: 
+    - Covariate:
+
+What are the statistial null and alternative hypotheses for the ANCOVA test?
+
+     - Null: the slopes of the regression lines are all the same (the covariate affects all levels of the treatment in the same way); the y intercepts of the regression lines are all the same
+     - Alternative: 
+
+What are the research null and alternative hypotheses for the ANCOVA test?
+
+     - Null: 
+     - Alternative: 
+
+```{r Import the Data}
+crickets <- read.csv("data/crickets.csv")
+```
+
+```{r Look at the Data}
+#### DataFrame ####
+
+#### Box and Whisker Plot of Main Effect ####
+plot(data = crickets, Pulse ~ Sp)
+# Does it look like there is a difference in song pulse between species?
+
+#### Scatterplot with Covariate
+library(ggplot2)
+crickets_Scatterplot <- ggplot(aes(y = Pulse, x = Temp, group = Sp, colour = Sp), data = crickets) + geom_point() + 
+  ylab("Song Pulse") + 
+  ggtitle("Effect of Species on Song Pulse") + 
+  xlab("Temperature (C)")
+crickets_Scatterplot
+
+# Does it look like there is an effect of temperature on pulse?
+
+# Let's add the regression lines for each Category:
+crickets_Scatterplot + geom_smooth(method=lm,se=FALSE,fullrange=crickets$Temp) + theme_bw()
+
+# Does it look like the covariate (temperature) effects each of the levels of the main effect the same? NOTE: remember, this is one of our assumptions of the ANCOVA
+
+```
+
+```{r Assumptions}
+##### Assumption 1: Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 2: Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 3: Equal Variance #####
+# bartlett.test(DEPENDENT ~ INDEPENDENT)
+bartlett.test( ~ , data = )
+# What are the results? Is there equal variance? Do we need to transform the data?
+
+#### Assumption 4: Normal Distribution ####
+# Now, let's check to see if our residuals are normal using the Shapiro test.
+crickets_ANOVA <- aov( ~ )
+hist(residuals(crickets_ANOVA))
+shapiro.test(residuals(crickets_ANOVA))
+# What are the results? Do we need to transform our data?
+
+#### Assumption 4: Consistent Effect of Covariate ####
+# The next step is to determine whether the slopes among the treatment levels of species are equal:
+crickets_EffectofCovariate <- aov(crickets$Pulse ~ crickets$Sp * Temp, data = crickets)
+summary(crickets_EffectofCovariate)
+# Not a significant interaction, so slopes are homogeneous (temperature varies similarly among the different species of crickets and may be used as a covariate.) Note: if the interaction had been significant, we would want to exclude the covariate and just run a one-way ANOVA
+
+```
+
+
+```{r Fitting the Best Model}
+# We know we are allowed to run the ANCOVA, but let's find out if including the covariate improves the model.
+
+# First, we'll run just a normal one-way ANOVA
+cricekts_ANOVA <- aov( ~ , data = )
+# Then, we'll extract the R^2 and RSE values
+summary.lm(cricekts_ANOVA)
+#R^2= 0.4797; RSE= 12.41
+
+# Then we'll build the ANCOVA to compare
+crickets_ANCOVA <- aov(Pulse ~ Sp + Temp, crickets)
+summary.lm(crickets_ANCOVA)
+#R^2= 0.9896; RSE= 1.786
+
+# Comparing the R^2 and RSE values between the one-way ANOVA and ANCOVA, which model is better?
+
+
+```
+
+```{r Results}
+# Now let's look at the results of the better model
+summary(crickets_ANCOVA)
+# What are the results? Is there a significant effect of smoking category on running time? How does age play a role?
+
+#There is a significant positive effect of the covariate, temperature, on song pulse (ANCOVA: F = 1371; p <2e-16 R^2=0.9896). However, there was no significant interaction of Species and Temperature (ANOVA: F = 0.1357; p=0.254), which indicates the effect of temperature is similar across both species. This allowed us to accept the null hypothesis that the slopes are equal, remove the effect of temperature, and focus on our main effect of species on song pulse. There was a significant difference in song pulse by species (ANCOVA: F = 1290; p<2e-16), so we reject our second null hypothesis, that the y intercepts are equal because there is a significant difference in the means.
+
+```
+
+```{r Post-Hoc Analysis}
+#### Tukey HSD Post-Hoc Analysis ####
+library(agricolae)
+crickets_Tukey <- HSD.test(crickets_ANCOVA, "Sp")
+crickets_Tukey
+
+crickets_SigLetters <- c("a", "b")
+
+#### Barplot ####
+library(plyr)
+# First, we have to sumamrize the data
+# DATAFRAME.summary <- ddply(DATAFRAME, ~MAINEFFECT, summarise, 
+                    #mean = mean(RESPONSEVARIABLE), 
+                    #sd = sd(RESPONSEVARIABLE), 
+                    #n = length(RESPONSEVARIABLE), 
+                    #SEM = sd(RESPONSEVARIABLE)/sqrt(length(RESPONSEVARIABLE)))
+crickets_summary <- ddply(crickets, ~Sp, summarise,
+                 mean = mean(Pulse),
+                 sd = sd(Pulse),
+                 n = length(Pulse),
+                 SEM = sd(Pulse)/sqrt(length(Pulse)))
+crickets_summary
+crickets_summary$sigs <- crickets_SigLetters
+
+# Then we can make the barplot
+#ggplot(aes(x = TREATMENT, y = mean), data = DATAFRAME) +
+  #geom_bar(stat = "identity", position = position_dodge()) +
+  #geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25, position = position_dodge()) +
+  #geom_text((aes(x = TREATMENT, y = mean+ SOMEVALUE), data = DATAFRAME, label = SIGNIFICANTLETTERS, colour = "black"))
+  #ggtitle("TITLE OF YOUR FIGURE") +
+  #ylab("Y AXIS TITLE") +
+  #xlab("X AXIS TITLE")
+
+crickets_plot <- ggplot(aes(x= , y=mean), data = ) + 
+  geom_bar(stat="identity") + 
+  geom_errorbar(aes(ymin=mean-SEM, ymax = mean+SEM), width = .25) + 
+  geom_text(aes(x = , y = mean+ ), data = , label = , colour = "black") + 
+  ylab("") +
+  xlab("") +
+  ggtitle("")
+
+# What are the results of the Tukey HSD Post-Hoc analysis?
+
+
+```
+
+### Example 2: Effect of Second-Hand Smoke on Running
+In an effort to understand how exposure to second hand smoke affects the speed of runners, a study measured the times of runners who completed a 5k and who fell into one of three groups: 
+    1) runners who live with smokers, 
+    2) runners who work in establishments where smoking occurs, and 
+    3) runners who do not live with smokers. 
+
+You want to perform a one-way ANOVA to determine whether the different exposure categories affects running times. In the study, only adult women (> 18 years) of the same socio-economic and ethnic background were included, but ages of the women spanned from 18 - 40. Age may have played a role in the outcomes and therefore you want to include this potential covariate in the statistical model so we will run an ANCOVA instead.
+
+```{r Import the Data}
+running <- read.csv("data/runningtimes.csv")
+```
+
+What are the independent, dependent, and covariate variables? Specify if each dependent variable is random or fixed
+
+    - Independent:
+    - Dependent: 
+    - Covariate:
+
+What are the statistial null and alternative hypotheses for the ANCOVA test?
+
+     - Null:  
+     - Alternative: 
+
+What are the research null and alternative hypotheses for the ANCOVA test?
+
+     - Null: 
+     - Alternative: 
+
+```{r Look at the Data}
+#### Dataframe ####
+
+#### Box and Whisker Plot of Main Effect ####
+plot(Running_Time~ Smoking_Category, data = running)
+# Does it look like there is a difference in running time among smoking categories?
+
+# Does it look like there is an effect of smoking exposure on running time?
+
+#### Scatterplot with Covariate ####
+library(ggplot2)
+running_Scatterplot <- ggplot(aes(y = , x = , group = , colour = ), data = ) + geom_point() +
+  ylab("") + 
+  ggtitle("Effect of Second-Hand Smoke Exposure on Running Times") + 
+  xlab("")
+running_Scatterplot
+
+# Does it look like there is an effect of age on running time?
+
+# Let's add the regression lines for each Category:
+running_Scatterplot + geom_smooth(method=lm,se=FALSE,fullrange=running$Age) + theme_bw()
+
+# Does it look like the covariate (age) effects each of the levels of the main effect the same? NOTE: remember, this is one of our assumptions of the ANCOVA
+
+
+```
+
+```{r Assumptions}
+##### Assumption 1: Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 2: Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 3: Equal Variance #####
+# bartlett.test(DEPENDENT ~ INDEPENDENT)
+bartlett.test()
+# What are the results? Is there equal variance? Do we need to transform the data?
+
+#### Assumption 4: Normal Distribution ####
+# Now, let's check to see if our residuals are normal using the Shapiro test.
+running_ANOVA <- aov( ~ , )
+shapiro.test(residuals(running_ANOVA))
+# What are the results? Do we need to transform our data?
+hist(residuals(running_ANOVA))
+
+#### Assumption 4: Consistent Effect of Covariate ####
+# The next step is to determine whether the slopes among the treatment levels of smoking exposure category are equal:
+running_EffectofCovariate <- aov(running$Running_Time ~ running$Smoking_Category * Age, data = running)
+summary(running_EffectofCovariate)
+# Not a significant interaction, so slopes are homogeneous (age varies similarly among the different smoking categories of runners and may be used as a covariate.) Note: if the interaction had been significant, we would want to exclude the covariate and just run a one-way ANOVA
+
+```
+
+
+```{r Fitting the Best Model}
+# We know we are allowed to run the ANCOVA, but let's find out if including the covariate improves the model.
+
+# First, we'll run just a normal one-way ANOVA
+running_ANOVA <- aov( ~ , data = )
+# Then, we'll extract the R^2 and RSE values
+summary.lm(running_ANOVA)
+#R^2= ; RSE= 
+
+# Then we'll build the ANCOVA to compare
+running_ANCOVA <- aov(Running_Time ~ Smoking_Category +Age, running)
+summary.lm(running_ANCOVA)
+#R^2= ; RSE= 
+
+# Comparing the R^2 and RSE values between the one-way ANOVA and ANCOVA, which model is better?
+
+
+```
+
+```{r Results}
+# Now let's look at the results of the better model
+summary()
+# What are the results? Is there a significant effect of smoking category on running time? How does age play a role?
+
+
+
+```
+
+```{r Post-Hoc Analysis}
+#### Tukey HSD Post-Hoc Analysis ####
+library(agricolae)
+running_Tukey <- HSD.test(running_ANCOVA, "Smoking_Category")
+running_Tukey
+
+running_SigLetters <- c("", "", "")
+
+#### Barplot ####
+library(plyr)
+# First, we have to sumamrize the data
+# DATAFRAME.summary <- ddply(DATAFRAME, ~MAINEFFECT, summarise, 
+                    #mean = mean(RESPONSEVARIABLE), 
+                    #sd = sd(RESPONSEVARIABLE), 
+                    #n = length(RESPONSEVARIABLE), 
+                    #SEM = sd(RESPONSEVARIABLE)/sqrt(length(RESPONSEVARIABLE)))
+running_summary <- ddply(, ~, summarise,
+                 mean = mean(),
+                 sd = sd(),
+                 n = length(),
+                 SEM = sd()/sqrt(length()))
+running_summary
+running_summary$sigs <- running_SigLetters
+
+# Then we can make the barplot
+#ggplot(aes(x = TREATMENT, y = mean), data = DATAFRAME) +
+  #geom_bar(stat = "identity", position = position_dodge()) +
+  #geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25, position = position_dodge()) +
+  #geom_text((aes(x = TREATMENT, y = mean+ SOMEVALUE), data = DATAFRAME, label = SIGNIFICANTLETTERS, colour = "black"))
+  #ggtitle("TITLE OF YOUR FIGURE") +
+  #ylab("Y AXIS TITLE") +
+  #xlab("X AXIS TITLE")
+
+running_plot <- ggplot(aes(x=, y=mean), data = ) + 
+  geom_bar(stat="identity") + 
+  geom_errorbar(aes(ymin=mean-SEM, ymax = mean+SEM), width = .25) + 
+  geom_text(aes(x = , y = mean+ ), data = , label = , colour = "black") + 
+  ylab("") +
+  xlab("") +
+  ggtitle("")
+
+# Let's rearrange the x axis in order of smoking exposure
+SmokingExposure <- factor(running_summary$Smoking_Category, level = c("No Smoking Exposure", "Works with Smoking", "Lives with Smoker"))
+  
+# Remake the ggplot
+
+
+# What are the results of the Tukey HSD Post-Hoc analysis?
+
+
+```
+

@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1666611789760.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2499249012",
+    "id" : "FBF3E8D5",
+    "lastKnownWriteTime" : 1666795180,
+    "last_content_update" : 1666795180261,
+    "path" : "C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 10 - Correlation/Lab 10 - Correlation-InClass.Rmd",
+    "project_path" : "Lab 10 - Correlation-InClass.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "190,36",
+        "scrollLine" : "177",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

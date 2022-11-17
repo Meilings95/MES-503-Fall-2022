@@ -1,0 +1,262 @@
+---
+title: "Lab 5- Linear Regression"
+author: "Sonora Meiling"
+date: "Created for MES 503 8/9/2022 | Adapted from Marilyn Brandt and Dan Holstein 2016"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+*The goal of this lab is to introduce you to working with the functions necessary for performing linear regression in R.*
+
+### Housekeeping
+To stay organized, every assignment should start with the following steps:
+
+1. On your computer, create a new directory which contains the data that you will be using for this lab. Create a new folder named something along the lines of "Lab 5- Linear Regression" (this is where you will be doing and saving all your work for this lab).
+
+2. Download all the required datasets for this lab and save them in a folder within your Lab 5 directory named "data"
+
+3. Create a new R project, save it into your Lab 5 folder and name it something that makes sense (e.g. Lab 5- Linear Regression)
+
+4. Set the Lab 5 folder as your working directory. The directory name below is an example of the directory name I use on my system. Your's will be a little different depending on where you put your Lab 5 directory. You can copy the address of your folder as text and paste it in here, but remember to change the forward slashes ("\") to backslashes ("/"). Alternatively, you can navigate to the folder in the Files pane then click on the "more" tab (the little blue gear) in the Files pane (the lower right window) and select "Set As Working Directory" and copy the working directory from your console.
+
+```{r setting working directory, eval=FALSE}
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 5- Linear Regression") #remember you have to change this to YOUR working directory, this line of code WILL NOT work for you because this is MY working directory. Delete everything within the () and replace with your file path
+```
+
+### Linear Regression
+#### Mussels
+We will use the Peake and Quinn (1993) dataset that investigated the relationship between species richness of macro-invertebrates (measured via Menhinick's index, D, measured as the number of species divided by the square root of the total number of individuals) and the area (m) of mussel clumps in intertidal Australia.
+
+Identify the independent predictor variable (X) and the dependent response variable (Y)
+
+     - Independent predictor variable: clump area
+     
+     - Dependent predictor variable: species richness
+
+What are the statistical null and alternative hypotheses?
+
+     - Null: slope = 0
+     - Alternative: slope does not = 0
+
+What are the research null and alternative hypotheses?
+
+     - Null: clump area has no effect on species richness
+     - Alternative: clump area has an effect on species richness
+     
+1. **Import the data** and name it "mussel"
+
+```{r Import the data, echo=FALSE}
+mussel <- read.csv("data/MusselClumpData.csv")
+```
+
+2. **Look at the data** 
+
+```{r Look at the data, eval=FALSE, echo=FALSE}
+View(mussel)
+```
+
+Is there anything weird we should note or change? If so, do so before proceeding
+
+
+For linear regression analyses the data have to be linearly related. Before begining the analysis we can check this assumption by plotting the data.
+
+```{r Plot the data, eval=FALSE}
+plot(mussel)
+```
+
+3. Now that you've determined that the data are likely linear, perform the linear regression using  the lm() function and name it "fit1". 
+
+```{r Fit the linear model}
+#the formula for fitting a linear model is responsevariable ~ predictorvariable
+fit1 <- lm(mussel$SPECIES.RICHNESS ~ mussel$CLUMP.AREA)
+
+# Look at the output from the lm() function. It contains the estimates for B0(intercept estimate) and B1 (sample estimate of the slope).
+fit1
+```
+
+In the results you will see "Coefficients".  The "(Intercept)" is B0 and "CLUMP.AREA" is B1.
+
+4. Now look at the summary, which contains the actual statistical test
+
+```{r Results}
+summary(fit1)
+```
+The summary table gives B0 (intercept estimate) and B1 (clump.area estimate).
+The t statistic is the coefficient divided by its standard error. It can be thought of as a measure of the precision with which the regression coefficient is measured. Check the degrees of freedom to make sure they're correct (r didn't delete any of your data)
+
+Is B1 positive or negative? What does that mean about the relationship between the predictor and the response? 
+
+     - B1 = 0.386 so there is a postive relationship between the predictor and response variables
+
+Near the bottom you'll find the R^2 value as well as the F-statistic and p-value. You will report the "multiple R-squared" value not the "adjusted R-squared" value. The closer to 1, the more the regression explains the variation in Y
+
+*Is the regression signficant?  How well does mussel clump area explain species richness? Do we accept or reject the null hypothesis?  Make sure to report the R^2 and p-value. What does that mean for the research hypothesis?* 
+
+     - R^2 = 0.8194
+     - p-value = 5.109e-10
+     
+     - There is a significantly positive relationship between mussel clump area and species richness (R^2 = 0.8194; p-value = 5.109e-10; y = 0.386x - 0.273).
+
+
+To add a linear regression line to the plot, you can use the function abline().
+If you give this function the output of lm() it will use the B0 and B1 estimates to put the line on the plot. 
+
+```{r linear regression plot with line}
+plot(mussel)
+abline(fit1, col = "blue", lwd = 4)
+```
+
+Use the function anova() to take your regression analysis output and put it into a clear ANOVA table:
+```{r ANOVA}
+anova(fit1) #look familiar?
+```
+
+
+#### Beetle Weight Loss
+Using linear regression, examine the relationship between beetle weight loss and percent relative humidity using the data set BeetleWeightLoss. This dataset includes the average measurement of weight loss of nine batches of 25 Tribolium beetles after six days of starvation at nine different humidity levels.
+
+Identify the independent predictor variable (X) and the dependent response variable (Y)
+
+     - Independent predictor variable: percent relative humidity
+     
+     - Dependent predictor variable: bettle weight loss
+
+What are the statistical null and alternative hypotheses?
+
+     - Null: slope = 0
+     - Alternative: slope does not = 0
+ 
+What are the research null and alternative hypotheses?
+
+     - Null: percent relative humidity has no effect on beetle weight loss
+     - Alternative: percent relative humidity has an effect on beetle weight loss
+
+Make sure your data was properly imported and name it "beetle".
+
+1. **Import the data** and name it "beetle"
+
+```{r Import the beetle weightloss data, echo=FALSE}
+beetle <- read.csv("data/BeetleWeightLoss.csv")
+```
+
+2. **Look at the data** 
+
+```{r Look at the beetle weightloss data}
+View(beetle)
+```
+
+Is there anything weird we should note or change? If so, do so before proceeding
+
+```{r Formatting beetle weightloss column headers}
+colnames(beetle) <- c("humidity", "wt_loss")
+
+```
+
+For linear regression analyses the data have to be linearly related. Before begining the analysis we can check this assumption by plotting the data.
+
+```{r Plot the beetle weightloss data, eval=FALSE}
+plot(beetle)
+
+```
+
+The plot() function is great for quickly looking at data, but if you want to make a nice figure (e.g. for a presentation, thesis, publication, etc.) you should use ggplot
+
+```{r Install ggplot, eval=FALSE}
+#first, we have to install the ggplot package
+install.packages("ggplot2")
+```
+
+
+```{r Intro to ggplot}
+#then we have to ask R to "turn on" the package
+library(ggplot2)
+ggplot(aes(x = humidity, y = wt_loss), data=beetle) + geom_point() + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)") + ggtitle("Relationship Between Beetle Weight Loss and Humidity")
+```
+
+3. Now that you've determined that the data are likely linear, perform the linear regression using  the lm() function and name it "fit2". 
+
+```{r Beetle weight loss linear regression, echo=FALSE}
+#remember the formula for fitting a linear model is responsevariable ~ predictorvariable
+
+fit2 <- lm(beetle$wt_loss ~ beetle$humidity)
+
+# Look at the output from the lm() function. It contains the estimates for B0(intercept estimate) and B1 (sample estimate of the slope).
+fit2
+```
+
+In the results you will see "Coefficients".  The "(Intercept)" is B0 and "CLUMP.AREA" is B1.
+
+4. Now look at the summary, which contains the actual statistical test
+
+```{r Beetle weightloss results}
+summary(fit2)
+anova(fit2)
+```
+The summary table gives B0 (intercept estimate) and B1 (clump.area estimate).
+The t statistic is the coefficient divided by its standard error. It can be thought of as a measure of the precision with which the regression coefficient is measured. Check the degrees of freedom to make sure they're correct (r didn't delete any of your data)
+
+Is B1 positive or negative? What does that mean about the relationship between the predictor and the response? 
+
+     - There is a negative relationship between percent relative humidity and beetle weight loss
+
+Near the bottom you'll find the R^2 value as well as the F-statistic and p-value. You will report the "multiple R-squared" value not the "adjusted R-squared" value. The closer to 1, the more the regression explains the variation in Y.
+
+*Is the regression signficant?  How well does relative humidity explain beetle weight loss? Do we accept or reject the null hypothesis? What does that mean for the research hypothesis?* 
+
+     - There is a significant negative relationship between percent relative humidity and beetle weight loss (R^2 = 0.975; p-value = 7.816e-07; y = -0.053x + 8.7). As percent relative humidity increases, mean beetle weight loss decreases.
+
+5. **Make a presentable figure**
+```{r beetle regression plot}
+ggplot(aes(x = humidity, y = wt_loss), data = beetle) + geom_point() + geom_smooth(method = lm) + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)") #note the only command we added to the previous ggplot code is geom_smooth(method = lm)
+
+#You'll notice that there are confidence intervals around the line. If you don't want these displayed, set "se = FALSE" like this: 
+
+ggplot(aes(x = humidity, y = wt_loss), data = beetle) + geom_point() + geom_smooth(method = lm, se = FALSE) + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)")
+
+# The default color for the line is blue. You can change this by setting "colour" = some other color. For example: 
+
+ggplot(aes(x = humidity, y = wt_loss), data = beetle) + geom_point() + geom_smooth(method = lm, colour = "red", se = FALSE) + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)")
+
+# adding a text box with the R^2 and linear model
+ggplot(aes(x = humidity, y = wt_loss), data = beetle) + geom_point() + geom_smooth(method = lm, colour = "red", se = FALSE) + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)") + ggtitle("Relationship Between Humidity and Beetle Weight Loss") +  geom_text(x = 75, y = 8.5, label = "y = -0.053x + 8.7\n R^2 = 0.975")
+```
+
+### Exporting Figures
+There are many ways to export figures from R and each have different effects on the quality of the final product.
+
+#### Low resolution
+**These methods should NOT be used for presentations or submitting figures for publication**
+
+With the plot pulled up in the Plots pane click on the "export" drop down menu. Here you can either save the plot as an image, pdf, or copy to the clipboard so you can paste it in another program. Note that will all 3 of these methods you can resize and reshape the figure in the pop-up window before exporting which will help control quality a bit.
+
+#### High resolution
+For this example we will save the beetle weight loss linear regression plot with the model (line), no SE, and the line colored red
+
+```{r High resolution ggplot export}
+#### Export as is ####
+#for this function to work best, you should save the desired plot as an object
+BeetleRegPlot <- ggplot(aes(x = humidity, y = wt_loss), data = beetle) + geom_point() + geom_smooth(method = lm, colour = "red", se = FALSE) + xlab("Relative Humidity (%)") + ylab("Mean Beetle Weight Loss (mg)")
+
+BeetleRegPlot
+ggsave("BeetleRegPlot.tiff", BeetleRegPlot, scale = 1, width = 1980, height = 1080, units = "px")
+#tiff files are the highest quality, but jpg and png are also good
+#if you navigate to your working directory on your computer you should now find the regression plot as a tiff file
+
+#there are a lot of ways to alter the aesthetics of ggplots, you just have to google what you want to do and it should be easy to find the answers. One change I use a lot is making the background transparent. To do that, you need to add the following commands to the plot (notice we can call the plot to add elements rather than having to copy and paste the entire code again)
+
+#### Export with transparent background ####
+BeetleRegPlot + theme(axis.text.x = element_text(angle = 90))+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_line(color = "grey"), #add major gridlines
+    panel.grid.minor = element_line(color = "grey")) #add minor gridlines
+    
+
+ggsave("BeetleRegPlotTransparent.tiff", BeetleRegPlot, bg='transparent')
+
+```
+
+### Suggested Homework
+In this lab we also went over some code that will be useful no matter the statistical test (e.g. how to save a ggplot in high resolution) that would be helpful to save somewhere where it is easy for you to find at a later date.

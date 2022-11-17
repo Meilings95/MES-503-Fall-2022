@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1663778263849.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "8D834E63",
+    "lastKnownWriteTime" : 1803064116792,
+    "last_content_update" : 1663778263849,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "CB1F7239",
+        "caption" : "coralcover.melt",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=coralcover.melt&cache_key=CB1F7239",
+        "displayedObservations" : 60,
+        "environment" : "",
+        "expression" : "coralcover.melt",
+        "object" : "coralcover.melt",
+        "preview" : 0,
+        "totalObservations" : 60,
+        "variables" : 3
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

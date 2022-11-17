@@ -1,0 +1,103 @@
+---
+title: "Take Home Assignment 3- ANOVA"
+author: "Sonora Meiling"
+date: "9/16/2022"
+output: word_document
+---
+### Housekeeping
+
+**This assignment is due via email to sonora.meiling@uvi.edu by Tuesday 9/20 at 10am. Late assignments will be deducted points. Please send as a word document with the file name YOURLASTNAME_TakeHomeAssignment3.docx (e.g. Meiling_TakeHomeAssignment3.docx)**
+
+```{r setting working directory}
+#insert your working directory here (HINT: it will likely be the same as your working directory from the Rmd file we went over during class)
+library(reshape2)
+library(plyr)
+library(ggplot2)
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 6- ANOVA")
+coralcover <- read.csv("data/Totalcoralcover.csv")
+
+```
+
+### Coral Cover ANOVA
+
+Using the Totalcoralcover.csv file provided on blackboard, run a one-way ANOVA to test if coral cover varies by site. These data include coral cover estimates from different sites in Antigua taken in 2005.
+
+#### Q1: Variables (0.5 pt)
+Identify the independent predictor variable(s) (X) and the dependent response variable (Y)
+
+     - Independent predictor variable:
+     
+     - Dependent predictor variable:
+
+
+#### Q2: Hypotheses (0.5 pt)
+
+      What are the RESEARCH null and alternative hypotheses?
+        - Null:
+        - Alternative:
+      What are the STATISTICAL null and alternative hypotheses?
+        - Null:
+        - Alternative:
+        
+#### Q3: Results (4 pts)
+
+*In 2-4 sentences explain the results of your linear regression as if you were writting a scientific manuscript for peer review (2 pts). Make sure to show your work (1) and include a figure with proper labels and a figure caption (1 pt).*
+
+```{r}
+coralcover$Transect <- NULL
+coralcover$X <- NULL
+
+
+coralcover.melt <- melt(coralcover, na.rm = TRUE, variable.name = "site", value.name = "proportion")
+
+coralcover.summary <- ddply(coralcover.melt,~site,summarize,
+                            mean = mean(proportion),
+                            sd = sd(proportion),
+                            n = length(proportion),
+                            SEM = sd(proportion)/sqrt(length(proportion)))
+
+# Bartlett's
+bartlett.test(proportion ~ site ,coralcover.melt) # significant so need to transform
+coralcover.melt$propasin <- asin(coralcover.melt$proportion)
+bartlett.test(propasin ~ site, coralcover.melt) # even more significant
+library(cars)
+coralcover.melt$proplogit <- logit(coralcover.melt$proportion)
+bartlett.test(proplogit ~ site, coralcover.melt) # still significant
+coralcover.melt$propsqrt <- sqrt(coralcover.melt$proportion)
+bartlett.test(propsqrt ~ site, coralcover.melt) # aha there we go ***use this one
+coralcover.melt$propsqr <- (coralcover.melt$proportion)^2
+bartlett.test(propsqr ~ site, coralcover.melt) # significant
+
+# shapiro's
+coralANOVA <- aov(proportion~site, data = coralcover.melt)
+coralresiduals <- residuals(coralANOVA)
+hist(coralresiduals)
+shapiro.test(coralresiduals) # significant so need to transform
+
+coralANOVAsqrt <- aov(propsqrt~site, data = coralcover.melt)
+coralresidualsSQRT <- residuals(coralANOVAsqrt)
+hist(coralresidualsSQRT)
+shapiro.test(coralresidualsSQRT) #squareroot also fixes residual distribution
+
+
+summary(coralANOVAsqrt)
+# there is a signficant differnece in coral cover among sites (F = 8.02, p = 3.54e-06)
+
+
+library(agricolae)
+Tukey <- HSD.test(coralANOVAsqrt, "site")
+Tukey
+
+coral.sigs <- c("bc","bc", "bc","ab","c","ab","a")
+ggplot(aes(x = site, y = mean), data = coralcover.summary) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25)+
+  xlab("Site") +
+  ylab("Coral Cover (mean +/- SEM)")+
+  ggtitle("Antigua Coral Cover")+
+  geom_text(aes(x = site, y = mean+sd+0.02), data = coralcover.summary, label = coral.sigs, colour = "black")
+
+```
+
+
+

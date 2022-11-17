@@ -1,0 +1,350 @@
+---
+title: "Lab 9 - Two-Way ANOVA"
+author: "Sonora Meiling, adapted from Marilyn Brandt 2016"
+date: "created 10/17/2022 for MES 503 Fall 2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+*The goal of this lab is to introduce you to working with the functions necessary for performing two-way ANOVAs in R.*
+
+### Housekeeping
+By now you should be getting used to the housekeeping steps. Make sure you are working in a "Lab 9" project that is saved in an appropriately named and organized folder on your computer. 
+
+As always, let's first define our working directory
+
+```{r Define the Working Directory}
+setwd("C:/Users/sonor/Desktop/MES 503/Fall 2022/Lab 9- Two-way ANOVA")
+
+```
+
+### Example 1: Effect of Nutrients on Coral Lesions
+The first dataset uses the corallesions.csv file, and includes the number of lesions on corals exposed to different concentrations of Phosphorus and Nitrogen. Two-way ANOVAs are similar to one-way ANOVAs in many ways, use your previous one-way ANOVA examples as references.
+
+```{r Import the Data}
+CoralLesions <- read.csv("data/corallesions.csv")
+```
+
+What are the independent and dependent variables? Specify if each dependent variable is random or fixed
+
+    - Independent:
+    - Dependent: 
+
+What are the statistial null and alternative hypotheses for the ANOVA test?
+
+     - Null: mean number of lesions on corals at all phosphorous levels are equal; mean number of lesions on corals at all nitrogen levels are equal; response is consistent across all phosphorous and nitrogen level combinations 
+     - Alternative: 
+
+What are the research null and alternative hypotheses for the ANOVA test?
+
+     - Null: 
+     - Alternative: 
+
+```{r Look at the data}
+#### Dataframe ####
+View(CoralLesions)
+
+# Let's get rid of the "Sample" column because it is unnecessary
+
+# Do we need to rearrange (e.g. melt) the data? If so, do so
+
+
+#### Plot ####
+##### Summarize the Data #####
+# In order to make bar plots of our data, we first have to summarize the data for ggplot
+
+library(plyr)
+
+# The format for making the summary dataframe is below, words in all caps are directions for what you should input to customize the command to your data. Note the addition of the second factor since we are running a two-way ANOVA
+# DATAFRAME.summary <- ddply(DATAFRAME, ~FACTOR * FACTOR, summarise, 
+                    #mean = mean(RESPONSEVARIABLE), 
+                    #sd = sd(RESPONSEVARIABLE), 
+                    #n = length(RESPONSEVARIABLE), 
+                    #SEM = sd(RESPONSEVARIABLE)/sqrt(length(RESPONSEVARIABLE)))
+
+CoralLesions_summary <-ddply(CoralLesions, ~P*N, summarise,
+                          mean = mean(Number.of.lesions),
+                          sd = sd(Number.of.lesions),
+                          n = length(Number.of.lesions),
+                          SEM = sd(Number.of.lesions)/sqrt(length(Number.of.lesions)))
+#This can be done with the formula (y ~ A + B + A:B) or (y ~ A*B)
+CoralLesions_summary
+
+# Now we can actually plot the data using the following skeleton, again, words in all caps are directions for what you should input to cusotmize the command to your data
+#ggplot(aes(x = FACTOR1, y = mean, fill = FACTOR2), data = DATAFRAME) +
+  #geom_bar(stat = "identity", position = position_dodge()) +
+  #geom_errorbar(aes(ymin = mean - SEM, ymax = mean + SEM), width = .25, position = position_dodge()) +
+  #ggtitle("TITLE OF YOUR FIGURE") +
+  #ylab("Y AXIS TITLE") +
+  #xlab("X AXIS TITLE") + 
+  #scale_fill_discrete(name = "FACTOR2")
+
+library(ggplot2)
+CoralLesion_Plot <- ggplot(aes(x = P, y = mean, fill = N), data = CoralLesions_summary) + #by using the "fill" argument we are able to plot the different concentrations of N as different bars in groups within each concentration of P on the x axis + 
+  geom_bar(stat="identity", position = position_dodge()) + # You have to dodge the bars so they don't get stacked on top of each other
+  geom_errorbar(aes(ymin = mean - SEM,ymax = mean + SEM), position = position_dodge(width = 0.9), width = 0.25) + # You also have to dodge the errorbars
+  ylab("Number of Lesions (mean +/- SEM)") + xlab("Phosphorus concentration") + scale_fill_discrete(name = "Nitrogen concentration") +
+  ggtitle("Effect of Nutrient Enrichment on Coral Disease")
+
+CoralLesion_Plot
+```
+
+Does it look like there is a diffrence in coral lesions among phosphorous concentrations? Across nitrogen concentrations? Across the interaction of the two nutrients?
+
+
+```{r Test Assumptions}
+##### Assumption 1: Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 2: Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 3: Equal Variance #####
+#Here is where two-way ANOVAs begin to differ. Since there are two factors, we have to test the variance among each of the 9 groups (we can easily create these groups as vectors using the split() command). 
+treatment_groups <- split(CoralLesions$Number.of.lesions,list(CoralLesions$P, CoralLesions$N))
+View(treatment_groups)
+
+#now run the bartlett test as we are used to from the one-way ANOVA
+CoralLesions_bartlett <- bartlett.test(treatment_groups)
+CoralLesions_bartlett
+
+
+# What are the results? What do they mean? Do number of lesions in different treatments have equal variance? Do we need to transform the data?
+
+#### Assumption 4: Normal Distribution ####
+#Now let's check the distribution of the residuals. Using the residuals() command we can easily extract the residuals from the ANOVA, so we first have to run and store the ANOVA
+
+CoralLesions_ANOVA <- aov(Number.of.lesions ~ P*N, CoralLesions) #since there are now 2 factors, we have to analyze the response variable by factor A, factor B, and the interaction of factor A and B. Same as when we summarized the data, this can be done with the formula (y ~ A + B + A:B) or (y ~ A*B)
+  
+#now that we have the ANOVA, we can extract them using the residuals() function
+CoralLesions_residuals <- residuals(CoralLesions_ANOVA)
+
+#now we can easily plot the histogram to look at the distribution the same way as we did with the one-way ANOVAs
+hist(CoralLesions_residuals)
+#do the residuals look approximately normally distributed?
+
+#we can statistically test this using the shapiro-wilk test the same way as we did with the one-way ANOVAs
+shapiro.test(CoralLesions_residuals)
+
+#do we need to transform the data? If so, do and create a new ANOVA object with the transformed data
+
+lesions_sqrt <- sqrt(CoralLesions$Number.of.lesions)
+lesions_sqrt
+CoralLesions$lesions_sqrt <- c(lesions_sqrt)  # append the transformed data as a new column in your original coral lesions data frame.
+
+#Next, we have to extract the new residuals to run the shapiro test
+CoralLesions_sqrt_ANOVA <- aov(lesions_sqrt ~ P*N,CoralLesions)
+CoralLesions_sqrt_residuals <- residuals(CoralLesions_ANOVA2)
+#do they look more normally distributed?
+hist(CoralLesions_sqrt_residuals)
+
+#now rerun the shapiro test with the transformed data to see if our transformation reshapes the data to adhere with the ANOVA assumptions
+shapiro.test(CoralLesions_sqrt_residuals)
+
+
+#Let's make sure there isn't a better transformation before we move on.
+
+lesions_squared <- 
+
+#Next, we have to extract the new residuals to run the shapiro test
+CoralLesions_sqrd_ANOVA <- 
+CoralLesions_sqrd_residuals <- 
+#do they look more normally distributed?
+hist()
+
+#now rerun the shapiro test with the transformed data to see if our transformation reshapes the data to adhere with the ANOVA assumptions
+shapiro.test()
+
+#Use the p-value to determine if this is a better transformation than the square-rooted data
+
+```
+
+Now that we know we meet all of the assumptions of an ANOVA, we can run the analsis.
+
+```{r Results}
+# Remember we have already built the ANOVA, now we just need to look at the results
+CoralLesions_sqrd_ANOVA
+summary(CoralLesions_sqrd_ANOVA)
+```
+
+What are the results of the experiment in respect to the effects of nutrient enrichment on coral disease? HINT: Make sure to address all 3 hypotheses and include the F-statistic and p-value
+
+      - 
+      
+```{r Plot the Results}
+#The plot we made previously focuses on displaying the interaction of P and N on lesions, however, since the interaction of P and N was not significant, it makes more sense to create two separate plots of each grouping. Our previous summary dataframe calculated parameters based on the interaction of P and N, so if we want to plot just one of the groupings, we need to create a new summary dataframe
+CoralLesions_Psummary <- ddply(CoralLesions, ~P, summarise, 
+                            mean = mean(Number.of.lesions),
+                            sd = sd(Number.of.lesions),
+                            n = length(Number.of.lesions),
+                            SEM = sd(Number.of.lesions)/sqrt(length(Number.of.lesions)))
+CoralLesions_Psummary
+
+#now we can plot the number of lesions within each treatment separately
+CoralLesions_PPlot <-  ggplot(aes(x = P, y = mean), data = CoralLesions_Psummary) + 
+  geom_bar(stat="identity", position = position_dodge()) + 
+  geom_errorbar(aes(ymin = mean - SEM,ymax = mean + SEM), position = position_dodge(width = 0.9), width = 0.25) + 
+  ylab("Number of Lesions (mean +/- SEM)") + 
+  xlab("Phosphorus Concentration") +
+  ggtitle("Effect of Phosphorous on Coral Disease")
+CoralLesions_PPlot
+
+#Now create the plot for the effect of Nitrogen on coral disease
+
+
+```
+
+But we're not done yet! Remember, so far we only know that there is a significant difference in number of lesions among P and N concentrations, but not which are significantly different from each other.
+
+```{r Tukey's HSD Post-hoc analysis}
+library(agricolae)
+CoralLesions_Ptukey <- HSD.test(CoralLesions_sqrd_ANOVA, "P")
+CoralLesions_Ptukey
+
+#What are the results? Which treatment has the most lesions? The least? Which treatments are significantly different from each other?
+
+
+#add the significant letters to the barchart
+P_sigletters <- c("", "", "")
+CoralLesions_PPlot + 
+  geom_text(aes(x = P, y = mean+SEM + 0.25), data = CoralLesions_Psummary, label = P_sigletters, colour = "black")
+
+
+
+
+
+#repeat for the nitrogen treatment
+
+
+#What are the results? Which treatment has the most lesions? The least? Which treatments are significantly different from each other?
+
+```
+
+### ANOVA Steps
+To review, the steps of performing an ANOVA are
+   1. Look at the data (data frame, plot/ggplot)
+   2. Test for equal variances (bartlett.test())
+   3. Transform if necessary
+   4. Save residuals and check for normality (shapiro.test())
+   5. Transform if necessary 
+   6. Perform the ANOVA (aov())
+   7. Perform post-hoc comparisons if necessary
+
+### Example 2: Millepora Distribution
+The second dataset usess millep.csv, and includes densities of Millepora coral colonies in 3 habitats at 3 sites in Panama.
+
+```{r Import the Data}
+millepora <- read.csv("data/millepora.csv")
+```
+
+What are the independent and dependent variables? Specify if each dependent variable is random or fixed
+
+    - Independent:
+    - Dependent: 
+
+What are the statistial null and alternative hypotheses for the ANOVA test?
+
+     - Null: 
+     - Alternative: 
+
+What are the research null and alternative hypotheses for the ANOVA test?
+
+     - Null: 
+     - Alternative: 
+
+```{r Look at the data}
+#### Dataframe ####
+
+# Do we need to rearrange (e.g. melt) the data? If so, do so
+
+
+#### Plot ####
+##### Summarize the Data #####
+# In order to make bar plots of our data, we first have to summarize the data for ggplot
+
+millepora_summary <-
+
+
+millepora_plot <-
+
+
+```
+
+Does it look like there is a diffrence in millepora density among habitats ? Among sites? Among the interaction of habitat and site?
+
+```{r Test Assumptions}
+##### Assumption 1: Random Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 2: Independent Samples #####
+# This assumption is satisfied by the experimental design
+
+##### Assumption 3: Equal Variance #####
+millepora_groups <- 
+
+#now run the bartlett test
+millepora_bartlett <- 
+
+
+# Do we need to transform the data?
+
+#### Assumption 4: Normal Distribution ####
+#Now let's check the distribution of the residuals. Using the residuals() command we can easily extract the residuals from the ANOVA, so we first have to run and store the ANOVA
+millepora_ANOVA <- 
+
+millepora_residuals <- 
+
+# Do we need to transform the data? If so, do
+
+```
+
+Now that we know we meet all of the assumptions of an ANOVA, we can run the analsis.
+
+```{r Results}
+# Remember we have already built the ANOVA, now we just need to look at the results
+summary(millepora_ANOVA)
+```
+
+What are the results of the experiment in respect to the effects of site and habitat on millepora density? HINT: Make sure to address all 3 hypotheses and include the F-statistic and p-value
+
+      - 
+
+```{r Tukey's HSD Post-hoc analysis}
+#Do we need to run post-hoc analyses? If so, do so and visualize the results on a revised bar chart(s)
+interaction_tukey <- HSD.test(millepora_ANOVA,"Site"*"Habitat")
+interaction_tukey
+#returns a null because HSD.test cannot handle interaction terms
+#we can use the TukeyHSD command and manually asign letter groups based on the p-values
+
+interaction_tukey2 <- TukeyHSD(millepora_ANOVA)
+interaction_tukey2
+#a: uva:mid-depth
+#b: secas:deep
+
+#but this is a lot of work, especially if you have a lot of levels within factor(s)
+#so another way to do this is to use glm modeling
+library(lme4)
+install.packages("multcomp")
+library(multcomp)
+millepora$factorAB <- with(millepora, interaction(Site, Habitat)) #This adds the interaction term as another column to the original dataframe
+View(millepora)
+
+# General linear model 
+glm.mod <- glm(Density.of.Millepora ~ Site + Habitat + factorAB, family = 'gaussian', data = millepora) 
+
+# Now we can use our favorite HSD.test to run the multiple comparisons test
+
+millepora_tukey <- HSD.test(glm.mod, trt = "factorAB", group = TRUE)
+millepora_tukey
+
+#What are the results? Which site:habitat combo has the most lesions? The least? Which locations are significantly different from each other?
+
+
+interaction.sigs <- 
+millepora_summary$interaction.sigs <- interaction.sigs
+millepora_plot + 
+  geom_text(aes(x = Site, y = mean+SEM + 1.3), data = millepora_summary, label = interaction.sigs, position = position_dodge(width=0.9), colour = "black")# position dodge makes is so that the letters aren't overlapping eachother, will have to adjust the width for each figure to properly fit them
+
+```
+
